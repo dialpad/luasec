@@ -32,6 +32,7 @@
 #include "context.h"
 #include "ssl.h"
 
+#include "reentrant.h"
 
 #ifndef LSEC_API_OPENSSL_1_1_0
 #define SSL_is_server(s) (s->server)
@@ -909,6 +910,15 @@ static luaL_Reg funcs[] = {
   {NULL,          NULL}
 };
 
+int init_OpenSSL(void)
+{
+  if (!THREAD_setup() || !SSL_library_init())
+    return 0;
+  OpenSSL_add_all_algorithms();
+  SSL_load_error_strings();
+  return 1;
+}
+
 /**
  * Initialize modules.
  */
@@ -916,12 +926,10 @@ LSEC_API int luaopen_ssl_core(lua_State *L)
 {
 #ifndef LSEC_API_OPENSSL_1_1_0
   /* Initialize SSL */
-  if (!SSL_library_init()) {
+  if (!init_OpenSSL()) {
     lua_pushstring(L, "unable to initialize SSL library");
     lua_error(L);
   }
-  OpenSSL_add_all_algorithms();
-  SSL_load_error_strings();
 #endif
 
 #if defined(WITH_LUASOCKET)

@@ -7,9 +7,10 @@ OBJS= \
  context.o \
  ssl.o     \
  config.o  \
+ reentrant.o \
  ec.o
 
-LIBS=-lssl -lcrypto -lluasocket
+LIBS=-lssl -lcrypto -lluasocket -lpthread
 
 WARN=-Wall -pedantic
 
@@ -64,3 +65,4 @@ x509.o: x509.c x509.h compat.h
 context.o: context.c context.h ec.h compat.h options.h
 ssl.o: ssl.c ssl.h context.h x509.h compat.h
 config.o: config.c ec.h options.h compat.h
+reentrant.o: reentrant.c reentrant.h
