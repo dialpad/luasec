@@ -4,9 +4,10 @@ LMOD=ssl.lua
 OBJS= \
  x509.o \
  context.o \
+ reentrant.o \
  ssl.o
 
-LIBS=-lssl -lcrypto -lluasocket
+LIBS=-lssl -lcrypto -lluasocket -lpthread
 
 WARN=-Wall -pedantic
 
@@ -58,3 +59,4 @@ clean:
 x509.o: x509.c x509.h config.h
 context.o: context.c context.h ec.h config.h
 ssl.o: ssl.c ssl.h context.h x509.h config.h
+reentrant.o: reentrant.c reentrant.h

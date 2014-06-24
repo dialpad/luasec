@@ -31,6 +31,8 @@
 #include "context.h"
 #include "ssl.h"
 
+#include "reentrant.h"
+
 /**
  * Underline socket error.
  */
@@ -776,19 +778,27 @@ static luaL_Reg funcs[] = {
   {NULL,          NULL}
 };
 
+
+int init_OpenSSL(void)
+{
+  if (!THREAD_setup() || !SSL_library_init())
+    return 0;
+  OpenSSL_add_all_algorithms();
+  SSL_load_error_strings();
+  return 1;
+}
+
+
 /**
  * Initialize modules.
  */
-#if (LUA_VERSION_NUM == 501)
 LSEC_API int luaopen_ssl_core(lua_State *L)
 {
   /* Initialize SSL */
-  if (!SSL_library_init()) {
+  if (!init_OpenSSL()) {
     lua_pushstring(L, "unable to initialize SSL library");
     lua_error(L);
   }
-  OpenSSL_add_all_algorithms();
-  SSL_load_error_strings();
 
 #if defined(WITH_LUASOCKET)
   /* Initialize internal library */
@@ -801,6 +811,7 @@ LSEC_API int luaopen_ssl_core(lua_State *L)
   luaL_newmetatable(L, "SSL:Connection");
   luaL_register(L, NULL, meta);
 
+#if (LUA_VERSION_NUM == 501)
   lua_newtable(L);
   luaL_register(L, NULL, methods);
   lua_setfield(L, -2, "__index");
@@ -808,31 +819,7 @@ LSEC_API int luaopen_ssl_core(lua_State *L)
   luaL_register(L, "ssl.core", funcs);
   lua_pushnumber(L, SOCKET_INVALID);
   lua_setfield(L, -2, "invalidfd");
-
-  return 1;
-}
 #else
-LSEC_API int luaopen_ssl_core(lua_State *L)
-{
-  /* Initialize SSL */
-  if (!SSL_library_init()) {
-    lua_pushstring(L, "unable to initialize SSL library");
-    lua_error(L);
-  }
-  OpenSSL_add_all_algorithms();
-  SSL_load_error_strings();
-
-#if defined(WITH_LUASOCKET)
-  /* Initialize internal library */
-  socket_open();
-#endif
-
-  luaL_newmetatable(L, "SSL:SNI:Registry");
-
-  /* Register the functions and tables */
-  luaL_newmetatable(L, "SSL:Connection");
-  luaL_setfuncs(L, meta, 0);
-
   lua_newtable(L);
   luaL_setfuncs(L, methods, 0);
   lua_setfield(L, -2, "__index");
@@ -841,7 +828,7 @@ LSEC_API int luaopen_ssl_core(lua_State *L)
   luaL_setfuncs(L, funcs, 0);
   lua_pushnumber(L, SOCKET_INVALID);
   lua_setfield(L, -2, "invalidfd");
+#endif
 
   return 1;
 }
-#endif
