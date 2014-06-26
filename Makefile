@@ -6,7 +6,7 @@ LUACPATH ?= /usr/local/lib/lua/5.1
 # Comment this lines if you will link with non-internal LuaSocket's help files
 #  and edit INCDIR and LIBDIR properly.
 EXTRA = luasocket
-DEFS  = -DWITH_LUASOCKET
+DEFS  = -DWITH_LUASOCKET $(CFLAGS)
 
 # Edit the lines below to inform new path, if necessary.
 # Path below points to internal LuaSocket's help files.
