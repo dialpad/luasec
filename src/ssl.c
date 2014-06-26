@@ -794,11 +794,13 @@ int init_OpenSSL(void)
  */
 LSEC_API int luaopen_ssl_core(lua_State *L)
 {
+#if !defined(EXTERNAL_OPENSSL_INIT)
   /* Initialize SSL */
   if (!init_OpenSSL()) {
     lua_pushstring(L, "unable to initialize SSL library");
     lua_error(L);
   }
+#endif
 
 #if defined(WITH_LUASOCKET)
   /* Initialize internal library */
