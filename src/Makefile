@@ -2,10 +2,12 @@ CMOD=ssl.so
 LMOD=ssl.lua
 
 OBJS= \
- x509.o \
+ x509.o    \
  context.o \
  reentrant.o \
- ssl.o
+ ssl.o     \
+ config.o  \
+ ec.o
 
 LIBS=-lssl -lcrypto -lluasocket -lpthread
 
@@ -22,8 +24,8 @@ MAC_CFLAGS=-O2 -fno-common $(WARN) $(INCDIR) $(DEFS)
 MAC_LDFLAGS=-bundle -undefined dynamic_lookup $(LIBDIR)
 
 INSTALL  = install
-CC       = cc
-LD       = $(MYENV) cc
+CC      ?= cc
+LD      ?= $(MYENV) cc
 CFLAGS  += $(MYCFLAGS)
 LDFLAGS += $(MYLDFLAGS)
 
@@ -32,10 +34,10 @@ LDFLAGS += $(MYLDFLAGS)
 all:
 
 install: $(CMOD) $(LMOD)
-	$(INSTALL) -d $(LUAPATH)/ssl $(LUACPATH)
-	$(INSTALL) $(CMOD) $(LUACPATH)
-	$(INSTALL) -m644 $(LMOD) $(LUAPATH)
-	$(INSTALL) -m644 https.lua $(LUAPATH)/ssl
+	$(INSTALL) -d $(DESTDIR)$(LUAPATH)/ssl $(DESTDIR)$(LUACPATH)
+	$(INSTALL) $(CMOD) $(DESTDIR)$(LUACPATH)
+	$(INSTALL) -m644 $(LMOD) $(DESTDIR)$(LUAPATH)
+	$(INSTALL) -m644 https.lua $(DESTDIR)$(LUAPATH)/ssl
 
 linux:
 	@$(MAKE) $(CMOD) MYCFLAGS="$(LNX_CFLAGS)" MYLDFLAGS="$(LNX_LDFLAGS)" EXTRA="$(EXTRA)"
@@ -56,7 +58,9 @@ clean:
 	cd luasocket && $(MAKE) clean
 	rm -f $(OBJS) $(CMOD)
 
-x509.o: x509.c x509.h config.h
-context.o: context.c context.h ec.h config.h
-ssl.o: ssl.c ssl.h context.h x509.h config.h
+ec.o: ec.c ec.h
+x509.o: x509.c x509.h compat.h
+context.o: context.c context.h ec.h compat.h
+ssl.o: ssl.c ssl.h context.h x509.h compat.h
 reentrant.o: reentrant.c reentrant.h
+config.o: config.c ec.h options.h compat.h
