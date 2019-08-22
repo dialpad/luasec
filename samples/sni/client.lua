@@ -3,7 +3,7 @@ local ssl    = require("ssl")
 
 local params = {
   mode = "client",
-  protocol = "tlsv1",
+  protocol = "tlsv1_2",
   key = "../certs/clientAkey.pem",
   certificate = "../certs/clientA.pem",
   cafile = "../certs/rootA.pem",
@@ -19,7 +19,8 @@ conn = ssl.wrap(conn, params)
 
 -- Comment the lines to not send a name
 --conn:sni("servera.br")
-conn:sni("serveraa.br")
+--conn:sni("serveraa.br")
+conn:sni("serverb.br")
 
 assert(conn:dohandshake())
 --

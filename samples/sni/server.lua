@@ -3,7 +3,7 @@ local ssl    = require("ssl")
 
 local params01 = {
   mode = "server",
-  protocol = "tlsv1",
+  protocol = "any",
   key = "../certs/serverAkey.pem",
   certificate = "../certs/serverA.pem",
   cafile = "../certs/rootA.pem",
@@ -14,7 +14,7 @@ local params01 = {
 
 local params02 = {
   mode = "server",
-  protocol = "tlsv1",
+  protocol = "any",
   key = "../certs/serverAAkey.pem",
   certificate = "../certs/serverAA.pem",
   cafile = "../certs/rootA.pem",
@@ -39,10 +39,12 @@ local conn = server:accept()
 conn = ssl.wrap(conn, ctx01)
 
 -- Configure the name map
-conn:sni({
+local sni_map = {
   ["servera.br"]  = ctx01,
   ["serveraa.br"] = ctx02,
-})
+}
+
+conn:sni(sni_map, true)
 
 assert(conn:dohandshake())
 --
